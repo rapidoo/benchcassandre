@@ -33,6 +33,28 @@ def main(ip):
         log.info("dropping existing keyspace...")
         session.execute("DROP KEYSPACE " + KEYSPACE)
 
-	
+    log.info("creating keyspace...")
+    session.execute("""
+        CREATE KEYSPACE %s
+        WITH replication = { 'class': 'SimpleStrategy', 'replication_factor': '1' }
+        """ % KEYSPACE)
+
+    log.info("setting keyspace...")
+    session.set_keyspace(KEYSPACE)
+
+    rows = session.execute("select table_name from  system_schema.columns;")
+
+    if TABLE not in [row[0] for row in rows]:
+        log.info("creating table...")
+        session.execute("""
+            CREATE TABLE %s (
+                thekey text,
+                col1 text,
+                col2 text,
+                PRIMARY KEY (thekey, col1)
+            )
+            """ % TABLE)
+
+
 if __name__ == "__main__":
     main(IP)
